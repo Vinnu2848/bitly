@@ -1,0 +1,5 @@
+"Story","Title","Result","Date","Stability","Duration (s)"
+"Bitly Data","Verify the get details of bitly","SUCCESS","2022-04-19T04:18:03.4190083+05:30[Asia/Calcutta]","0.0","6.16"
+"Bitly Data","Verify the get details of bitly with invalid guid","SUCCESS","2022-04-19T04:18:09.5990292+05:30[Asia/Calcutta]","0.0","3.93"
+"Bitly Data","Verify the get bitlinks data","SUCCESS","2022-04-19T04:18:13.5412729+05:30[Asia/Calcutta]","0.0","1.28"
+"Bitly Data","Verify the create bitlinks","SUCCESS","2022-04-19T04:18:14.8453628+05:30[Asia/Calcutta]","0.0","0.68"
