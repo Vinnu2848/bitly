@@ -1,0 +1,27 @@
+package common;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.PageFactory;
+
+import java.util.concurrent.TimeUnit;
+
+public class Controls {
+
+     WebDriver driver;
+//    public static Controls getInstance(){
+//        if(controls==null)
+//        {
+//            controls=new Controls();
+//        }
+//        return controls;
+//    }
+    public Controls(WebDriver driver)
+    {
+        this.driver=driver;
+        PageFactory.initElements(driver,this);
+    }
+    public void wait(int wait)
+    {
+        driver.manage().timeouts().implicitlyWait(wait, TimeUnit.SECONDS);
+    }
+}
