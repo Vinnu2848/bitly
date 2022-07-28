@@ -1,0 +1,168 @@
+Selenium 4th version new updates
+Here's what we will learn in this chapter:
+
+Changes to Screenshot functionality
+
+Switching to the parent frame directly
+
+Changes to Selenium grid
+
+New Locators
+
+AI with Selenium
+
+Visual validation
+
+Applitools Eyes
+
+Self-correcting tests
+
+Auto coder
+
+Improved Docker support
+
+1. In Selenium-3, we have the TakesScreenshot interface and getScreenshotAs() method to capture screenshots. But we only get the screenshot
+ of the currently visible page as a whole. Selenium 4 lets you take the screenshot of a section of a page (Div or Form) or a single element.
+ Let's see how to take the screenshot of a single WebElement.
+	WebElement sampleButton = driver.findElement(By.xpath(Button xpath));
+	File srcFile = sampleButton.getScreenshotAs(OutputType.FILE);
+	FileUtils.copyFile(srcFile,new File("./path of the screenshot folder/name of file.png");
+	
+2.Switching to the parent frame directly
+Up until Selenium-3, if we have frames inside frames, then switching from the child frame to the parent frame was a two-step process as shown below:
+
+Switch from the child frame to the main window using driver.switchTo().defaultContent();
+
+Switch from the main window to the parent frame
+
+Now with Selenium-4 in the picture, you need to give one command once you are in the child frame, as shown below:
+
+driver.switchTo().parentFrame();
+The command shown above will take you to the parent frame directly without the need to navigate to the main window.	
+3.Selenium Grid-4
+The new Selenium Server JAR contains everything that is needed to run a grid. It's a single jar that contains every dependency, so can be run by issuing the commands shown below
+
+java -jar selenium-server-4.0.0-alpha-1.jar
+Selenium Grid-4 can be run in three modes, as shown below:
+
+Standalone mode
+
+Hub and node
+
+Fully distributed
+
+Standalone mode
+The simplest mode to run the server in is the standalone mode. Just run:
+
+java -jar selenium-server-4.0.0-alpha-1.jar standalone
+The server will listen on http://localhost:4444/, and that's the URL one should point remote WebDrivers to (that is, one no longer needs to use http://localhost:4444/wd/hub) By default, the server will detect available drivers it can use (GeckoDriver, etc.) by looking at the PATH one can use this mode to make sure that things are working as expected.
+
+Hub and node
+This is the traditional mode in which the Grid has been run as two pieces: the hub and one or more nodes. To start the hub, use the command below:
+
+java -jar selenium-server-4.0.0-alpha-1.jar hub
+And start the node with:
+
+java -jar selenium-server-4.0.0-alpha-1.jar node --detect-drivers
+If you wish to run the hub and the node on separate machines, start the node with:
+
+java -jar selenium-server-4.0.0-alpha-1.jar node --detect-drivers --publish-events tcp://hub:4442 --subscribe-events tcp://hub:4443
+Let's look at the final one, which is fully distributed.
+
+Fully distributed
+One can start Grid 4 in a fully distributed manner, with each conceptual piece in its process. First of all, start the session map (which is responsible for mapping session IDs to the node the session is running on):
+
+java -jar selenium-server-4.0.0-alpha-1.jar sessions
+Then start the distributor:
+
+java -jar selenium-server-4.0.0-alpha-1.jar distributor --sessions http://localhost:5556
+And augment the system with a router:
+
+java -jar selenium-server-4.0.0-alpha-1.jar router --sessions http://localhost:5556 --distributor
+http://localhost:5553
+The router will now listen to new session requests on http://localhost:4444.
+
+Add a node to it:
+
+java -jar selenium-server-4.0.0-alpha-1.jar node --detect-drivers
+Finally, confirm everything by navigating to http://localhost:4444/status.
+4.New locators
+We know about the existing locators in Selenium-3. Let's now look at what new locators have been introduced in Selenium 4
+
+toLeftOf(): Returns the element located to the left of specified element.
+
+toRightOf(): Returns the element located to the right of the specified element.
+
+above(): Returns the element located above the specified element.
+
+below(): Returns the element located below the specified element.
+
+near(): Returns the element that is at most 50 pixels far away from the specified element. The pixel value can be modified.
+5.Visual validation
+Automation code can be written to take screenshots and then make a pixel-by-pixel comparison to see if the two match. The problem is that they rarely do: variables encountered can be different machines which run at different resolutions, different rendering engines that could result in color changes that were invisible to the human eye, but different to a computer for eg. Attributes such as brightness and contrast levels. One has to accept the small percentage of error that happens
+
+Using a percentage of a difference to work out if the correct thing was displayed on-screen turned out to be very difficult for visual testing, a percentage difference on its own is just not noticeable by a human. Imagine that you have two screenshots of a screen: your expected image and the actual image. Both images are 80% similar to each other; however, they are very different concerning a color change that cannot be seen with the human eye or showing a different button.
+
+Next, we have a look at an API called Applitools Eyes, which helps in validating the visual contents of a web page. This tool works with Selenium-3 as well.
+5.Exploring Applitools Eyes
+Applitools Eyes can be set in the project using the entry shown below in pom.xml:
+
+<!-- https://mvnrepository.com/artifact/com.applitools/eyes-common-java4 -->
+<dependency>
+<groupId>com.applitools</groupId>
+<artifactId>eyes-common-java4</artifactId>
+<version>4.3.0</version>
+</dependency>
+The next thing to do is register on the Applitools website https://applitools.com/users/register
+
+Once the signup process gets completed, the API key will be made available. Using the sample code on their website, a visual test can be done. One can customize the code to add the script as per his/her requirement. Let's see a sample script where visual checkpoints are inserted before and after the click of a button.
+
+public class TestClass5 {
+WebDriver driver=null;
+Eyes eyes = new Eyes();
+ 
+@BeforeTest
+public void setUp() {
+try {
+SingletonDriver.getInstance().setDriver("chrome", "local",
+"windows");
+} catch (Exception e) {
+// TODO Auto-generated catch block
+e.printStackTrace();
+}
+driver = SingletonDriver.getInstance().getDriver();
+}
+ 
+@Test
+public void test1() {
+eyes.setApiKey("Your API Key");
+eyes.open(driver, "HelloWorld", "My first Eyes code");
+driver.get("https://applitools.com/helloworld");
+eyes.checkWindow("Hello!");
+driver.findElement(By.tagName("button")).click();
+eyes.checkWindow("Click!");
+eyes.close();
+}
+ 
+@AfterTest
+public void tearDown() {
+driver.close();
+driver.quit();
+}
+}
+Output:
+
+The first time the test is run, a base image gets generated. After the first run, all subsequent runs will be compared with the base image. The Applitools dashboard is shown below
+
+Figure 14.1:
+
+Now run the test again and notice the output.
+
+Figure 14.2:
+
+Notice the highlighted section has an equal to sign which means that the visual screen of the current run are matching with those of the Base run
+
+Now change the URL to https://applitools.com/helloworld?diff2 and run the test again. This time the test fails. If you navigate to the Applitools dashboard, the changes are highlighted for you, and thus the two screen versions are visually compared.
+
+Figure 14.3:
+
